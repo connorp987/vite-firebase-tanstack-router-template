@@ -1,30 +1,22 @@
-# React + TypeScript + Vite
+# React + TypeScript + Vite + Tanstack Router + Firebase + Shadcn/ui
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimal template to help get an app started with `Tanstack Router + Firebase + Shadcn/ui`
 
-Currently, two official plugins are available:
+## Getting started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Clone repo
+2. Put all the firebase credentials in a.env file, you can copy the contents from .env.example
+3. run `npm install` and `npm run dev`
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Helpful links
 
-- Configure the top-level `parserOptions` property like this:
+* [Shadcn/ui](https://ui.shadcn.com/)
+* [Tanstack router](https://tanstack.com/router/latest)
+* [Firebase docs](https://firebase.google.com/docs/auth/web/start)
+* [Tailwind](https://tailwindcss.com/docs/installation)
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+## Shadcn/ui
+To add a new compenent from Shadcn/ui, you can simply do `npx shadcn-ui@latest add <component you want here>`
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+If there are changes you want to make to that compenent go to `./src/components/ui` and choose the component you wish to modify
