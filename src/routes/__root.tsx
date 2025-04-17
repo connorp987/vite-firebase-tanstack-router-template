@@ -4,11 +4,10 @@ import {
   createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { signOut } from "../helpers/auth";
 import { useAuthContext } from "../helpers/authContext";
 import { Toaster } from "sonner";
-import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserNav } from "@/components/user-nav";
 
 interface MyRouterContext {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,13 +37,7 @@ function RootComponent() {
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
           {user ? (
-            <Button
-              onClick={() => {
-                signOut();
-              }}
-            >
-              Sign Out
-            </Button>
+            <UserNav />
           ) : (
             <Link to={"/signin"} activeProps={{ className: "font-bold" }}>
               Sign In
