@@ -2,6 +2,7 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { AuthContextProvider, useAuthContext } from "./helpers/authContext";
+import { ThemeProvider } from "./components/theme-provider";
 import "./index.css";
 
 // Set up a Router instance
@@ -27,9 +28,11 @@ function InnerApp() {
 
 function App() {
   return (
-    <AuthContextProvider>
-      <InnerApp />
-    </AuthContextProvider>
+    <ThemeProvider defaultTheme="system" storageKey="theme-preference">
+      <AuthContextProvider>
+        <InnerApp />
+      </AuthContextProvider>
+    </ThemeProvider>
   );
 }
 
