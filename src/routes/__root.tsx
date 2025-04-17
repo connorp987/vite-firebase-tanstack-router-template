@@ -3,7 +3,7 @@ import {
   Outlet,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { signOut } from "../helpers/auth";
 import { useAuthContext } from "../helpers/authContext";
 import { Toaster } from "sonner";
@@ -26,19 +26,12 @@ function RootComponent() {
       <div className="p-4 flex gap-2 text-lg items-center">
         <Link
           to="/"
-          activeProps={{
-            className: "font-bold",
-          }}
+          activeProps={{ className: "font-bold" }}
           activeOptions={{ exact: true }}
         >
           Home
         </Link>{" "}
-        <Link
-          to={"/about"}
-          activeProps={{
-            className: "font-bold",
-          }}
-        >
+        <Link to={"/about"} activeProps={{ className: "font-bold" }}>
           About
         </Link>
         {user ? (
@@ -50,12 +43,7 @@ function RootComponent() {
             Sign Out
           </Button>
         ) : (
-          <Link
-            to={"/signin"}
-            activeProps={{
-              className: "font-bold",
-            }}
-          >
+          <Link to={"/signin"} activeProps={{ className: "font-bold" }}>
             Sign In
           </Link>
         )}

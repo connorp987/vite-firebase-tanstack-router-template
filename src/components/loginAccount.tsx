@@ -18,7 +18,7 @@ import { toast } from "sonner";
 export function SigninAccount() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate({ from: "/login" });
+  const navigate = useNavigate({ from: "/signin" });
 
   const handleSignin = async () => {
     try {

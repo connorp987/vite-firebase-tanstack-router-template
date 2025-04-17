@@ -1,6 +1,6 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createLazyFileRoute, redirect } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/about")({
+export const Route = createLazyFileRoute("/about")({
   beforeLoad: ({ context, location }) => {
     if (!context.user) {
       throw redirect({
