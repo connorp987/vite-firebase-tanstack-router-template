@@ -20,7 +20,7 @@ A modern React template with TypeScript, featuring real-time data synchronizatio
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/vite-firebase-tanstack-router-template.git
+   git clone https://github.com/connorp987/vite-firebase-tanstack-router-template.git
    cd vite-firebase-tanstack-router-template
    ```
 
