@@ -1,22 +1,76 @@
-# React + TypeScript + Vite + Tanstack Router + Firebase + Shadcn/ui
+# Vite + Firebase + TanStack Router Template
 
-A minimal template to help get an app started with `Tanstack Router + Firebase + Shadcn/ui`
+A modern React template with TypeScript, featuring real-time data synchronization, authentication, and a beautiful UI right out of the box.
 
-## Getting started
+![Template Screenshot](./public/screenshot.png)
 
-1. Clone repo
-2. Put all the firebase credentials in a.env file, you can copy the contents from .env.example
-3. run `npm install` and `npm run dev`
+## Features
 
+- 🔥 **Firebase Integration** - Built-in authentication and real-time database functionality
+- 🛣️ **TanStack Router** - Type-safe routing with built-in loading states and data handling
+- 🌓 **Dark Mode** - Automatic dark mode support with theme persistence
+- 🎨 **Tailwind CSS** - Utility-first CSS framework for rapid UI development
+- 📝 **TypeScript** - Full type safety and improved developer experience
+- ⚡ **Vite** - Lightning fast development server and build tool
+- 🎯 **Shadcn/ui** - Beautiful, accessible UI components
 
-## Helpful links
+## Getting Started
 
-* [Shadcn/ui](https://ui.shadcn.com/)
-* [Tanstack router](https://tanstack.com/router/latest)
-* [Firebase docs](https://firebase.google.com/docs/auth/web/start)
-* [Tailwind](https://tailwindcss.com/docs/installation)
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/vite-firebase-tanstack-router-template.git
+   cd vite-firebase-tanstack-router-template
+   ```
 
-## Shadcn/ui
-To add a new compenent from Shadcn/ui, you can simply do `npx shadcn-ui@latest add <component you want here>`
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-If there are changes you want to make to that compenent go to `./src/components/ui` and choose the component you wish to modify
+3. Set up your Firebase configuration:
+   - Copy `.env.example` to `.env`
+   - Fill in your Firebase credentials in `.env`
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+VITE_PUBLIC_FIREBASE_API_KEY=
+VITE_PUBLIC_FIREBASE_AUTH_DOMAIN=
+VITE_PUBLIC_FIREBASE_PROJECT_ID=
+VITE_PUBLIC_FIREBASE_STORAGE_BUCKET=
+VITE_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+VITE_PUBLIC_FIREBASE_APP_ID=
+VITE_PUBLIC_FIREBASE_MEASUREMENT_ID=
+```
+
+## Adding UI Components
+
+This template uses [shadcn/ui](https://ui.shadcn.com/) for UI components. To add a new component:
+
+```bash
+npx shadcn-ui@latest add <component-name>
+```
+
+Components can be customized in `./src/components/ui`.
+
+## Helpful Links
+
+* [Shadcn/ui Documentation](https://ui.shadcn.com/)
+* [TanStack Router Documentation](https://tanstack.com/router/latest)
+* [Firebase Documentation](https://firebase.google.com/docs/auth/web/start)
+* [Tailwind CSS Documentation](https://tailwindcss.com/docs/installation)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
