@@ -23,29 +23,30 @@ function RootComponent() {
 
   return (
     <>
-      <div className="p-4 flex gap-2 text-lg items-center">
-        <Link
-          to="/"
-          activeProps={{ className: "font-bold" }}
-          activeOptions={{ exact: true }}
-        >
-          Home
-        </Link>{" "}
-        <Link to={"/about"} activeProps={{ className: "font-bold" }}>
-          About
-        </Link>
-        <div className="ml-auto flex items-center gap-2">
-          <ThemeToggle />
-          {user ? (
-            <UserNav />
-          ) : (
-            <Link to={"/signin"} activeProps={{ className: "font-bold" }}>
-              Sign In
-            </Link>
-          )}
+      <div className="border-b">
+        <div className="container mx-auto px-4 py-4 flex gap-2 text-lg items-center">
+          <Link
+            to="/"
+            activeProps={{ className: "font-bold" }}
+            activeOptions={{ exact: true }}
+          >
+            Home
+          </Link>{" "}
+          <Link to={"/about"} activeProps={{ className: "font-bold" }}>
+            About
+          </Link>
+          <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
+            {user ? (
+              <UserNav />
+            ) : (
+              <Link to={"/signin"} activeProps={{ className: "font-bold" }}>
+                Sign In
+              </Link>
+            )}
+          </div>
         </div>
       </div>
-      <hr />
       <Outlet />
       <Toaster richColors />
       <TanStackRouterDevtools position="bottom-right" />

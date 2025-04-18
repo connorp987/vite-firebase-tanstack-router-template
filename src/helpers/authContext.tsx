@@ -15,6 +15,7 @@ interface UserData {
   displayName: string | null;
   email: string | null;
   photoURL: string | null;
+  base64Image?: string | null;
   // Add any other user fields you want to track
 }
 
