@@ -2,7 +2,9 @@
 
 A modern React template with TypeScript, featuring real-time data synchronization, authentication, and a beautiful UI right out of the box.
 
-![Template Screenshot](public/screenshot.png)
+<img width="1710" alt="image" src="https://github.com/user-attachments/assets/fac8b7c8-5386-4e4d-80f6-c18806943d03" />
+
+
 
 ## Features
 
