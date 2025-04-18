@@ -1,4 +1,4 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,9 @@ import {
   GoogleAuthProvider,
   AuthProvider,
   ProviderId,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/helpers/firebaseConfig";
@@ -30,17 +33,27 @@ import { FirebaseError } from "firebase/app";
 const getDefaultAvatarUrl = (name: string) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
 
-export const Route = createLazyFileRoute("/settings")({
+export const Route = createFileRoute("/settings")({
+  loader: ({ context }) => {
+    if (!context.user.user) {
+      throw redirect({ to: "/signin" });
+    }
+  },
   component: SettingsPage,
 });
 
 function SettingsPage() {
   const { user, userData } = useAuthContext();
+  const navigate = useNavigate({ from: "/settings" });
   const [displayName, setDisplayName] = useState(userData?.displayName || "");
   const [photoURL, setPhotoURL] = useState(userData?.photoURL || "");
   const [base64Image, setBase64Image] = useState(userData?.base64Image || "");
   const [isProcessing, setIsProcessing] = useState(false);
   const [linkedProviders, setLinkedProviders] = useState<string[]>([]);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -59,6 +72,13 @@ function SettingsPage() {
       );
     }
   }, [user]);
+
+  // Redirect if user logs out
+  useEffect(() => {
+    if (!user) {
+      navigate({ to: "/signin" });
+    }
+  }, [user, navigate]);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -225,18 +245,65 @@ function SettingsPage() {
     }
   };
 
+  const handleUpdatePassword = async () => {
+    if (!user?.email) return;
+
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters");
+      return;
+    }
+
+    try {
+      setIsUpdatingPassword(true);
+      // First, reauthenticate the user
+      const credential = EmailAuthProvider.credential(
+        user.email,
+        currentPassword
+      );
+      await reauthenticateWithCredential(user, credential);
+
+      // Then update the password
+      await updatePassword(user, newPassword);
+
+      // Clear the form
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+
+      toast.success("Password updated successfully!");
+    } catch (error) {
+      if (error instanceof FirebaseError) {
+        if (error.code === "auth/wrong-password") {
+          toast.error("Current password is incorrect");
+        } else {
+          toast.error("Failed to update password");
+        }
+      }
+      console.error("Error updating password:", error);
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  const showPasswordUpdate = linkedProviders.includes(ProviderId.PASSWORD);
+
   if (!user) return null;
 
   return (
-    <div className="container mx-auto py-10 space-y-8">
+    <div className="container mx-auto py-6 space-y-6 max-w-2xl">
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-4">
           <CardTitle>Profile Settings</CardTitle>
           <CardDescription>
             Manage your account settings and profile preferences.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="displayName">Display Name</Label>
             <Input
@@ -247,10 +314,10 @@ function SettingsPage() {
             />
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <Label>Profile Picture</Label>
             {(base64Image || photoURL) && (
-              <div className="mb-4 relative w-24 h-24 rounded-full overflow-hidden">
+              <div className="relative w-20 h-20 rounded-full overflow-hidden border border-border">
                 <img
                   src={base64Image || photoURL}
                   alt="Profile"
@@ -258,7 +325,7 @@ function SettingsPage() {
                 />
               </div>
             )}
-            <div className="flex flex-col gap-2">
+            <div className="space-y-3">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -266,105 +333,179 @@ function SettingsPage() {
                 accept="image/*"
                 className="hidden"
                 onClick={(e) => {
-                  // Reset the input value to ensure onChange fires even if the same file is selected
                   (e.target as HTMLInputElement).value = "";
                 }}
               />
               <Button
                 onClick={() => {
                   if (fileInputRef.current) {
-                    console.log("Opening file picker...");
                     fileInputRef.current.click();
                   }
                 }}
                 disabled={isProcessing}
                 variant="outline"
+                className="w-full sm:w-auto"
               >
                 {isProcessing ? "Processing..." : "Upload New Picture"}
               </Button>
-              <div className="text-sm text-muted-foreground">
-                Or use an image URL:
-              </div>
-              <Input
-                value={photoURL}
-                onChange={(e) => {
-                  setPhotoURL(e.target.value);
-                  setBase64Image(""); // Clear base64 image when using URL
-                }}
-                placeholder="Enter URL for your profile picture"
-              />
-              <div className="text-xs text-muted-foreground">
-                Note: Uploaded images must be smaller than 900KB
+              <div className="space-y-2">
+                <div className="text-sm text-muted-foreground">
+                  Or use an image URL:
+                </div>
+                <Input
+                  value={photoURL}
+                  onChange={(e) => {
+                    setPhotoURL(e.target.value);
+                    setBase64Image("");
+                  }}
+                  placeholder="Enter URL for your profile picture"
+                />
+                <div className="text-xs text-muted-foreground">
+                  Note: Uploaded images must be smaller than 900KB
+                </div>
               </div>
             </div>
           </div>
 
-          <Button onClick={handleUpdateProfile} disabled={isProcessing}>
+          <Button
+            onClick={handleUpdateProfile}
+            disabled={isProcessing}
+            className="mt-2"
+          >
             Save Changes
           </Button>
         </CardContent>
       </Card>
 
+      {showPasswordUpdate && (
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle>Update Password</CardTitle>
+            <CardDescription>
+              Change your account password. You'll need to enter your current
+              password first.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter your current password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter your new password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your new password"
+              />
+            </div>
+            <Button
+              onClick={handleUpdatePassword}
+              disabled={
+                isUpdatingPassword ||
+                !currentPassword ||
+                !newPassword ||
+                !confirmPassword
+              }
+              className="w-full sm:w-auto"
+            >
+              {isUpdatingPassword ? "Updating..." : "Update Password"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-4">
           <CardTitle>Connected Accounts</CardTitle>
           <CardDescription>
             Manage your connected accounts and authentication methods.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent>
           <div className="space-y-4">
-            <div className="text-sm font-medium">Currently Connected:</div>
-            <div className="space-y-2">
-              {linkedProviders.map((providerId) => (
-                <div
-                  key={providerId}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    {providerId === ProviderId.GOOGLE && (
-                      <Icons.google className="h-4 w-4" />
-                    )}
-                    {providerId === ProviderId.GITHUB && (
-                      <Icons.gitHub className="h-4 w-4" />
-                    )}
-                    {getProviderName(providerId)}
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleUnlinkAccount(providerId)}
-                    disabled={linkedProviders.length <= 1}
+            <div>
+              <h3 className="text-sm font-medium mb-2">Currently Connected:</h3>
+              <div className="space-y-2">
+                {linkedProviders.map((providerId) => (
+                  <div
+                    key={providerId}
+                    className="flex items-center justify-between rounded-lg border p-3"
                   >
-                    Unlink
-                  </Button>
-                </div>
-              ))}
+                    <div className="flex items-center gap-2">
+                      {providerId === ProviderId.GOOGLE && (
+                        <Icons.google className="h-4 w-4" />
+                      )}
+                      {providerId === ProviderId.GITHUB && (
+                        <Icons.gitHub className="h-4 w-4" />
+                      )}
+                      {getProviderName(providerId)}
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleUnlinkAccount(providerId)}
+                      disabled={linkedProviders.length <= 1}
+                    >
+                      Unlink
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="text-sm font-medium mt-6">
-              Link Additional Accounts:
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {!linkedProviders.includes(ProviderId.GOOGLE) && (
-                <Button
-                  variant="outline"
-                  onClick={() => handleLinkAccount(new GoogleAuthProvider())}
-                >
-                  <Icons.google className="mr-2 h-4 w-4" />
-                  Link Google
-                </Button>
-              )}
-              {!linkedProviders.includes(ProviderId.GITHUB) && (
-                <Button
-                  variant="outline"
-                  onClick={() => handleLinkAccount(new GithubAuthProvider())}
-                >
-                  <Icons.gitHub className="mr-2 h-4 w-4" />
-                  Link GitHub
-                </Button>
-              )}
-            </div>
+            {(!linkedProviders.includes(ProviderId.GOOGLE) ||
+              !linkedProviders.includes(ProviderId.GITHUB)) && (
+              <div>
+                <h3 className="text-sm font-medium mb-2">
+                  Link Additional Accounts:
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {!linkedProviders.includes(ProviderId.GOOGLE) && (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        handleLinkAccount(new GoogleAuthProvider())
+                      }
+                      className="w-full"
+                    >
+                      <Icons.google className="mr-2 h-4 w-4" />
+                      Link Google
+                    </Button>
+                  )}
+                  {!linkedProviders.includes(ProviderId.GITHUB) && (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        handleLinkAccount(new GithubAuthProvider())
+                      }
+                      className="w-full"
+                    >
+                      <Icons.gitHub className="mr-2 h-4 w-4" />
+                      Link GitHub
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
