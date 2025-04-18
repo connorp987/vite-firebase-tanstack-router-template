@@ -12,10 +12,20 @@ import {
 import { useAuthContext } from "@/helpers/authContext";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { updateProfile } from "firebase/auth";
+import {
+  updateProfile,
+  linkWithPopup,
+  unlink,
+  GithubAuthProvider,
+  GoogleAuthProvider,
+  AuthProvider,
+  ProviderId,
+} from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/helpers/firebaseConfig";
-
+import { Icons } from "@/components/icons";
+import { FirebaseError } from "firebase/app";
+//TODO change this to not be a lazy route
 // Default avatar from UI Avatars API
 const getDefaultAvatarUrl = (name: string) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
@@ -30,6 +40,7 @@ function SettingsPage() {
   const [photoURL, setPhotoURL] = useState(userData?.photoURL || "");
   const [base64Image, setBase64Image] = useState(userData?.base64Image || "");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [linkedProviders, setLinkedProviders] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -39,6 +50,15 @@ function SettingsPage() {
       setBase64Image(userData.base64Image || "");
     }
   }, [userData]);
+
+  // Update linked providers whenever user changes
+  useEffect(() => {
+    if (user) {
+      setLinkedProviders(
+        user.providerData.map((provider) => provider.providerId)
+      );
+    }
+  }, [user]);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -143,13 +163,75 @@ function SettingsPage() {
     }
   };
 
+  const handleLinkAccount = async (provider: AuthProvider) => {
+    if (!user) return;
+
+    try {
+      await linkWithPopup(user, provider);
+      // Update linked providers immediately after successful linking
+      setLinkedProviders(
+        user.providerData.map((provider) => provider.providerId)
+      );
+      toast.success("Account linked successfully!");
+    } catch (error: unknown) {
+      if (error instanceof FirebaseError) {
+        if (error.code === "auth/provider-already-linked") {
+          toast.error("This account is already linked");
+        } else if (error.code === "auth/credential-already-in-use") {
+          toast.error("This account is already linked to another user");
+        } else {
+          console.error("Error linking account:", error);
+          toast.error("Failed to link account");
+        }
+      } else {
+        console.error("Unknown error:", error);
+        toast.error("An unexpected error occurred");
+      }
+    }
+  };
+
+  const handleUnlinkAccount = async (providerId: string) => {
+    if (!user) return;
+
+    // Don't allow unlinking if it's the only provider
+    if (user.providerData.length <= 1) {
+      toast.error("Cannot unlink the only authentication method");
+      return;
+    }
+
+    try {
+      await unlink(user, providerId);
+      // Update linked providers immediately after successful unlinking
+      setLinkedProviders(
+        user.providerData.map((provider) => provider.providerId)
+      );
+      toast.success("Account unlinked successfully!");
+    } catch (error) {
+      console.error("Error unlinking account:", error);
+      toast.error("Failed to unlink account");
+    }
+  };
+
+  const getProviderName = (providerId: string) => {
+    switch (providerId) {
+      case ProviderId.GOOGLE:
+        return "Google";
+      case ProviderId.GITHUB:
+        return "GitHub";
+      case ProviderId.PASSWORD:
+        return "Email/Password";
+      default:
+        return providerId;
+    }
+  };
+
   if (!user) return null;
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-10 space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle>Settings</CardTitle>
+          <CardTitle>Profile Settings</CardTitle>
           <CardDescription>
             Manage your account settings and profile preferences.
           </CardDescription>
@@ -220,6 +302,70 @@ function SettingsPage() {
           <Button onClick={handleUpdateProfile} disabled={isProcessing}>
             Save Changes
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Connected Accounts</CardTitle>
+          <CardDescription>
+            Manage your connected accounts and authentication methods.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="text-sm font-medium">Currently Connected:</div>
+            <div className="space-y-2">
+              {linkedProviders.map((providerId) => (
+                <div
+                  key={providerId}
+                  className="flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    {providerId === ProviderId.GOOGLE && (
+                      <Icons.google className="h-4 w-4" />
+                    )}
+                    {providerId === ProviderId.GITHUB && (
+                      <Icons.gitHub className="h-4 w-4" />
+                    )}
+                    {getProviderName(providerId)}
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleUnlinkAccount(providerId)}
+                    disabled={linkedProviders.length <= 1}
+                  >
+                    Unlink
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <div className="text-sm font-medium mt-6">
+              Link Additional Accounts:
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {!linkedProviders.includes(ProviderId.GOOGLE) && (
+                <Button
+                  variant="outline"
+                  onClick={() => handleLinkAccount(new GoogleAuthProvider())}
+                >
+                  <Icons.google className="mr-2 h-4 w-4" />
+                  Link Google
+                </Button>
+              )}
+              {!linkedProviders.includes(ProviderId.GITHUB) && (
+                <Button
+                  variant="outline"
+                  onClick={() => handleLinkAccount(new GithubAuthProvider())}
+                >
+                  <Icons.gitHub className="mr-2 h-4 w-4" />
+                  Link GitHub
+                </Button>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

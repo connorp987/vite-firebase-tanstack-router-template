@@ -31,7 +31,6 @@ export function CreateAccount() {
         toast.error("Sign in failed, please try again.");
         return;
       }
-      console.log(test);
       return navigate({ to: "/" });
     } catch (e) {
       console.error(e);
