@@ -57,7 +57,7 @@ VITE_PUBLIC_FIREBASE_MEASUREMENT_ID=
 This template uses [shadcn/ui](https://ui.shadcn.com/) for UI components. To add a new component:
 
 ```bash
-npx shadcn-ui@latest add <component-name>
+npx shadcn@latest add <component-name>
 ```
 
 Components can be customized in `./src/components/ui`.
