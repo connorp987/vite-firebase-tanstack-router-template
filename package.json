@@ -27,7 +27,7 @@
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
-    "@tanstack/react-router-devtools": "^1.116.0",
+    "@tanstack/react-router-devtools": "^1.121.16",
     "@tanstack/router-plugin": "^1.116.1",
     "@tanstack/router-vite-plugin": "^1.116.1",
     "@types/node": "^20.11.26",
