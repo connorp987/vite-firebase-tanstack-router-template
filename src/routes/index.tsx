@@ -90,7 +90,7 @@ function FeatureCard({
   icon: string;
 }) {
   return (
-    <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 space-y-2">
+    <div className="rounded-lg border bg-card text-card-foreground shadow-xs p-6 space-y-2">
       <div className="text-3xl">{icon}</div>
       <h3 className="font-semibold text-lg">{title}</h3>
       <p className="text-sm text-muted-foreground">{description}</p>
