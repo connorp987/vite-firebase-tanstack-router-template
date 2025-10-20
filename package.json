@@ -31,7 +31,7 @@
     "@tanstack/react-router-devtools": "^1.130.13",
     "@tanstack/router-plugin": "^1.116.1",
     "@tanstack/router-vite-plugin": "^1.116.1",
-    "@types/node": "^20.11.26",
+    "@types/node": "^24.8.1",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
