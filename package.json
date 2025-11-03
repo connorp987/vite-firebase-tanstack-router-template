@@ -39,7 +39,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^7.0.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
+    "eslint-plugin-react-refresh": "^0.4.24",
     "postcss": "^8.4.38",
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
